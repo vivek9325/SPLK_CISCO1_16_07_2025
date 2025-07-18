@@ -1,0 +1,144 @@
+index=_internal | stats sum(bytes) as bytes by sourcetype | fillnull value="NA"
+
+index=_internal | stats avg(bytes) as bytes by sourcetype | fillnull value="NA"
+
+
+index=_internal 
+| eval vk_kb = round(bytes/1024,3)." KB"
+| table vk_kb, bytes
+
+
+
+index=main 
+| dedup current_ticket_state 
+| eval state= if(current_ticket_state="Closed" OR current_ticket_state="Resolved", "Incomplete", "Complete") 
+| table current_ticket_state, state
+
+
+
+index=main 
+| dedup severity 
+| table severity 
+| eval status = case(severity=1,"Critical", severity=2, "High", severity=3, "Normal", 1=1, "Low") 
+| sort severity
+
+
+Splunk Documentation --- https://docs.splunk.com/Documentation
+
+index=main 
+| chart count by current_ticket_state, asset_id 
+| addcoltotals label=sum labelfield=current_ticket_state 
+| addtotals fieldname=total
+
+
+index=_internal sourcetype=splunkd_ui_access
+
+
+`no_arg`
+
+index=main current_ticket_state="Closed" OR current_ticket_state="Resolved"
+
+
+index=main 
+|  table ticket_number, severity, current_ticket_state
+| lookup vk_sample_lookup.csv ticket_number OUTPUT time_taken as time_consumed
+
+
+c
+
+if(severity<3,"High","Normal")
+
+
+| makeresults 
+| eval text = "Vivek"
+| eval md5 = md5(text), sha256 = sha256(text), sha512 = sha512(text)
+
+
+index=main 
+| table ticket_number, time_submitted, closed_date
+| eval epoc_time_submitted = strptime(time_submitted,"%d-%m-%y %H:%M"), epoc_closed_date = strptime(closed_date, "%d-%m-%y %H:%M")
+| eval diff = epoc_closed_date - epoc_time_submitted
+| eval format_time_field = strftime(diff, "%H:%M:%S")
+
+
+
+source="tutorialdata.zip:*" host="DESKTOP-TIC5DM4" index="main"
+| transaction clientip, JSESSIONID
+
+source="tutorialdata.zip:*" host="DESKTOP-TIC5DM4" index="main"
+| transaction clientip, JSESSIONID startswith=view endswith=purchase
+
+
+| makeresults
+| eval val=12.789, rounded=round(val,2), ceild = ceil(val), floored = floor(val)
+
+| makeresults
+| eval error_code = 100
+| eval error_flag = if(isnull(error_code),"Yes","No")
+
+
+| makeresults
+| eval status=100, backup_status=200
+| eval final_status = coalesce(status, backup_status,"UNKNOWN")
+
+| makeresults
+| eval user_agent="Google Chrome", hostname="srv01", duration=60
+| eval datatype=typeof(duration)
+| where like(user_agent, "%Chrome%")
+
+
+| makeresults
+| eval  current_error=10.51, previous_error=9.41
+| eval delta=abs(current_error-previous_error), sample=random()
+
+
+| makeresults
+| eval url = "http://localhost:8000/en-US/app/search/"
+| eval split = split(url,"/")
+| eval  domain = mvindex(split(url,"/"),2)
+
+
+| makeresults
+| eval user="Vivek"
+| eval upper_method = upper("Vivek"), lower_method = lower("VivEk"), short_user=substr(user,1,3), length=len(user)
+
+
+| makeresults
+| eval user="Vivek", first_name="vivek", last_name="arora"
+| eval upper_method = upper("Vivek"), lower_method = lower("VivEk"), short_user=substr(user,1,3), length=len(user)
+| eval fullname = first_name." ".last_name
+| eval list = "val1,val2,val3"
+| eval split_list = split(list,",")
+| eval first_item = mvindex(split(list,","),0)
+
+
+| makeresults
+| eval colors = "red,blue,green"
+| eval colors_split = split(colors,",")
+| mvexpand colors_split
+
+
+
+| makeresults
+|eval id="101", items=split("PC,Laptop,Mobile",",")
+| mvexpand items
+| eval order_line = id."-".items
+
+
+| makeresults
+|eval tags="error,critical,warning"
+| makemv delim="," tags
+
+
+
+
+| makeresults
+| eval category="Network|Database|Applications"
+| makemv delim="|" category
+
+
+
+| makeresults count=3
+| streamstats count AS row
+| eval group = if(row==1,"A",null())
+| filldown group
